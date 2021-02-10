@@ -1,0 +1,17 @@
+{
+  "size": [
+    6,
+    6
+  ],
+  "x-label": [
+    -10,
+    10
+  ],
+  "y-label": [
+    -10,
+    10
+  ],
+  "x-label-step": 1,
+  "y-label-step": 1,
+  "output": "out/graph1.jpg"
+}
