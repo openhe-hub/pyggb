@@ -23,7 +23,7 @@ class PyGeogebra:
         self.plt.savefig(self.setting['output'])
 
     def addTitle(self, title):
-        self.plt.title(title)
+        self.plt.title(title, loc="left")
 
     def plotFunction(self, text='', x=None, y=None, f=None, x_limit=None, f_str=''):
         if x_limit is None:
