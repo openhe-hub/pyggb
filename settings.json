@@ -1,7 +1,7 @@
 {
   "size": [
-    6,
-    6
+    8,
+    8
   ],
   "x-label": [
     -10,
@@ -13,5 +13,10 @@
   ],
   "x-label-step": 1,
   "y-label-step": 1,
-  "output": "out/graph1.jpg"
+  "x-step": 0.001,
+  "output": "out/graph1.jpg",
+  "x-text-offset": -0.15,
+  "y-text-offset":0.15,
+  "point-radius":15,
+  "font-size":10
 }
