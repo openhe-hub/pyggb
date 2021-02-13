@@ -104,3 +104,14 @@ class PyGeogebra:
             abs(y2[0] - x_end) < deviation)
         _y2 = y2[1][x_begin_index[0][0]:x_end_index[0][0] + 1]
         self.plt.fill_between(x=_x, y1=_y1, y2=_y2, alpha=self.setting['shadow-alpha'])
+
+    def drawZero(self, fx, x_limit, text=''):
+        x, y = symbols('x,y')
+        res = solve(fx.f(x), x)
+        ans_x, ans_y = [], []
+        for i in res:
+            if x_limit[0] <= i <= x_limit[1]:
+                ans_x.append(i)
+                ans_y.append(fx.f(i))
+        for i in zip(ans_x, ans_y):
+            self.drawPoint(i[0], i[1], f'(${i[0]},${i[1]})')
