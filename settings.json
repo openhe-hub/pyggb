@@ -16,7 +16,27 @@
   "x-step": 0.005,
   "output": "out/graph1.jpg",
   "x-text-offset": -0.15,
-  "y-text-offset":0.15,
-  "point-radius":15,
-  "font-size":10
+  "y-text-offset": 0.15,
+  "point-radius": 17,
+  "font-size": 10,
+  "line-style": [
+    "-",
+    "--",
+    "-.",
+    ".",
+    ":"
+  ],
+  "point-style": [
+    ",",
+    "o",
+    "^",
+    "v",
+    "<",
+    ">",
+    "s",
+    "+",
+    "x"
+  ],
+  "shadow-alpha": 1,
+  "deviation": 0.001
 }
