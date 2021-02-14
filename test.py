@@ -14,7 +14,7 @@ def eq1(zeta):
 if __name__ == '__main__':
     ggb = init()
     ggb.addTitle('Graph 1')
-    ggb.plotEquation(eq1, [0, 2 * pi], r"\Gamma:\frac{x^2}{4}+\frac{y^2}{1}=1")
+    ggb.drawEquation(eq1, [0, 2 * pi], r"\Gamma:\frac{x^2}{4}+\frac{y^2}{1}=1")
     A = ggb.drawPoint(-1, 0, r"A")
     B = ggb.drawPoint(0, 1, r"B")
     ggb.drawLine(A, B, [-3, 3], r"l_{AB}")

@@ -33,7 +33,7 @@ def init(setting=None):
     plt.xticks(x_ticks)
     plt.yticks(y_ticks)  # 设置坐标轴标签
     plt.axis('equal')  # 强制单位距离等长
-    return PyGeogebra(plt, figure, setting)
+    return PyGeogebra(plt, figure, ax, setting)
 
 
 def config():

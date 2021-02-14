@@ -4,17 +4,18 @@
     8
   ],
   "x-label": [
-    -10,
-    10
+    -100,
+    100
   ],
   "y-label": [
-    -10,
-    10
+    -100,
+    100
   ],
   "x-label-step": 1,
   "y-label-step": 1,
   "x-step": 0.005,
   "output": "out/graph1.jpg",
+  "output-anim": "out/anim1.gif",
   "x-text-offset": -0.15,
   "y-text-offset": 0.15,
   "point-radius": 17,
@@ -38,5 +39,8 @@
     "x"
   ],
   "shadow-alpha": 1,
-  "deviation": 0.001
+  "deviation": 0.001,
+  "round-scale": 4,
+  "interval": 200,
+  "repeat-delay": 1000
 }

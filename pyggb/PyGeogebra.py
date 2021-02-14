@@ -2,17 +2,21 @@ import numpy as np
 from sympy import *
 
 from pyggb.Equation import Equation
+from pyggb.Slider import Slider
 from pyggb.utils import toLatex
 from pyggb.Function import Function
 from pyggb.Point import Point
+from scipy.optimize import minimize_scalar
+import matplotlib.animation as animation
 
 
 class PyGeogebra:
     O = Point(0, 0, 'O')
 
-    def __init__(self, plt, figure, setting):
+    def __init__(self, plt, figure, ax, setting):
         self.plt = plt
         self.figure = figure
+        self.ax = ax
         self.setting = setting
 
     def show(self):
@@ -24,10 +28,13 @@ class PyGeogebra:
         self.plt.plot()
         self.plt.savefig(self.setting['output'])
 
+    def saveAsGIF(self, anim):
+        anim.save(self.setting['output-anim'], writer='pillow')
+
     def addTitle(self, title):
         self.plt.title(title, loc="left")
 
-    def plotFunction(self, text='', x=None, y=None, f=None, x_limit=None, line_style='-'):
+    def drawFunction(self, text='', x=None, y=None, f=None, x_limit=None, line_style='-'):
         if x_limit is None:
             x_limit = []
         if y is None:
@@ -46,7 +53,7 @@ class PyGeogebra:
             function_prototype = Function(x_limit=x_limit, data=[x, y], text=toLatex(text), f=f)
             return function_prototype
 
-    def plotEquation(self, equation, param_limit, text='', line_style='-'):
+    def drawEquation(self, equation, param_limit, text='', line_style='-'):
         param = np.arange(param_limit[0], param_limit[1] + self.setting['x-step'], self.setting['x-step'])
         length = param.shape
         x, y = np.zeros(length), np.zeros(length)
@@ -96,7 +103,7 @@ class PyGeogebra:
         deviation = self.setting["deviation"]
         x_begin, x_end = x_limit[0], x_limit[1]
         y1, y2 = F1.data, F2.data
-        _x = x = np.arange(x_begin, x_end + self.setting['x-step'], self.setting['x-step'])
+        _x = np.arange(x_begin, x_end + self.setting['x-step'], self.setting['x-step'])
         x_begin_index, x_end_index = np.where(abs(y1[0] - x_begin) < deviation), np.where(
             abs(y1[0] - x_end) < deviation)
         _y1 = y1[1][x_begin_index[0][0]:x_end_index[0][0] + 1]
@@ -106,12 +113,51 @@ class PyGeogebra:
         self.plt.fill_between(x=_x, y1=_y1, y2=_y2, alpha=self.setting['shadow-alpha'])
 
     def drawZero(self, fx, x_limit, text=''):
-        x, y = symbols('x,y')
+        x, y = symbols('x,y', real=true)
         res = solve(fx.f(x), x)
         ans_x, ans_y = [], []
         for i in res:
             if x_limit[0] <= i <= x_limit[1]:
                 ans_x.append(i)
                 ans_y.append(fx.f(i))
+        pos = 1
         for i in zip(ans_x, ans_y):
-            self.drawPoint(i[0], i[1], f'(${i[0]},${i[1]})')
+            self.drawPoint(i[0], i[1],
+                           f'{text}_{pos}({round(i[0], self.setting["round-scale"])},{round(i[1], self.setting["round-scale"])})')
+            pos += 1
+
+    def drawMin(self, fx, x_limit, text=''):
+        min_x = minimize_scalar(fx.f, bounds=(x_limit[0], x_limit[1]), method="bounded").x
+        min_y = fx.f(min_x)
+        self.drawPoint(min_x, min_y,
+                       f'{text}({round(min_x, self.setting["round-scale"])},{round(min_y, self.setting["round-scale"])})')
+
+    def drawMax(self, fx, x_limit, text=''):
+        def _f(x):
+            return -1 * fx.f(x)
+
+        min_x = minimize_scalar(_f, bounds=(x_limit[0], x_limit[1]), method="bounded").x
+        min_y = fx.f(min_x)
+        self.drawPoint(min_x, min_y,
+                       f'{text}({round(min_x, self.setting["round-scale"])},{round(min_y, self.setting["round-scale"])})')
+
+    def drawExtreme(self, fx, x_limit, text=''):
+        pass
+
+    def buildSlider(self, _min, _max, step, name=''):
+        return Slider(_min, _max, step, text=name)
+
+    def drawAnimation(self, slider, f, x_limit):
+        fig = self.figure
+        frames = []
+        for i in np.arange(slider.min_val, slider.max_val + slider.step, slider.step):
+            x = np.arange(x_limit[0], x_limit[1] + self.setting['x-step'], self.setting['x-step'])
+            length = x.shape
+            y = np.zeros(length)
+            for j in range(length[0]):
+                y[j] = f(x[j], param=i)
+            frame = self.plt.plot(x, y)
+            frames.append(frame)
+        anim = animation.ArtistAnimation(fig, frames, interval=self.setting['interval'],
+                                         repeat_delay=self.setting['repeat-delay'])
+        return anim
