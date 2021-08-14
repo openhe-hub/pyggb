@@ -13,7 +13,7 @@
   ],
   "x-label-step": 1,
   "y-label-step": 1,
-  "x-step": 0.005,
+  "x-step": 0.001,
   "output": "out/graph1.jpg",
   "output-anim": "out/anim1.gif",
   "x-text-offset": -0.15,

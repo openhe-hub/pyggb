@@ -18,13 +18,14 @@ class PyGeogebra:
         self.figure = figure
         self.ax = ax
         self.setting = setting
+        self.labels = []
 
     def show(self):
-        self.plt.legend()
+        self.plt.legend(self.labels, loc=1)
         self.plt.plot()
 
     def save(self):
-        self.plt.legend()
+        self.plt.legend(self.labels, loc=1)
         self.plt.plot()
         self.plt.savefig(self.setting['output'])
 
@@ -44,27 +45,55 @@ class PyGeogebra:
         if len(x) != 0 and len(y) != 0:
             self.plt.plot(x, y, label=toLatex(text), linestyle=line_style)
         elif f is not None and len(x_limit) != 0:
-            x = np.arange(x_limit[0], x_limit[1] + self.setting['x-step'], self.setting['x-step'])
+            x = np.arange(x_limit[0], x_limit[1] +
+                          self.setting['x-step'], self.setting['x-step'])
             length = x.shape
             y = np.zeros(length)
             for i in range(length[0]):
                 y[i] = f(x[i])
-            self.plt.plot(x, y, label=toLatex(text), linestyle=line_style)
-            function_prototype = Function(x_limit=x_limit, data=[x, y], text=toLatex(text), f=f)
+            self.plt.plot(x, y, linestyle=line_style)
+            self.labels.append(toLatex(text))
+            function_prototype = Function(
+                x_limit=x_limit, data=[x, y], text=toLatex(text), f=f)
             return function_prototype
 
-    def drawEquation(self, equation, param_limit, text='', line_style='-'):
-        param = np.arange(param_limit[0], param_limit[1] + self.setting['x-step'], self.setting['x-step'])
+    def drawEquationWithParams(self, equation, param_limit, text='', line_style='-'):
+        param = np.arange(
+            param_limit[0], param_limit[1] + self.setting['x-step'], self.setting['x-step'])
         length = param.shape
         x, y = np.zeros(length), np.zeros(length)
         for i in range(length[0]):
             (x[i], y[i]) = equation(param[i])
-        self.plt.plot(x, y, label=toLatex(text), linestyle=line_style)
+        self.plt.plot(x, y, linestyle=line_style)
+        self.labels.append(toLatex(text))
         equation_prototype = Equation(equation, param_limit, text)
         return equation_prototype
 
+    def drawEquationWithX(self, equation, x_limit, text='', line_style='-'):
+        x = np.arange(x_limit[0], x_limit[1] +
+                      self.setting['x-step'], self.setting['x-step'])
+        data_x, data_y = [], []
+        eq = equation
+        lts, rts = eq.split('=')[0], eq.split('=')[1]
+        eq = lts+'-('+rts+')'
+        res = solve(eq, 'y')
+
+        for i in range(len(x)):
+            for j in range(len(res)):
+                y_j = res[j].evalf(subs={'x': x[i]}, n=10)
+                if y_j.is_real:  # get rid of the complex ans
+                    data_x.append(x[i])
+                    data_y.append(y_j)
+        self.plt.scatter(data_x, data_y, s=1)
+        self.plt.plot(data_x[0],data_y[0],linestyle=line_style)
+        self.labels.append(toLatex(text))
+        equation_prototype = Equation(
+            equation, param_limit=[], text=text, x_limit=x_limit)
+        return equation_prototype
+
     def drawPoint(self, x, y, text='', point_style='o'):
-        self.plt.scatter(x, y, self.setting["point-radius"], marker=point_style)
+        self.plt.scatter(
+            x, y, self.setting["point-radius"], marker=point_style)
         self.plt.text(x + self.setting["x-text-offset"], y + self.setting["y-text-offset"], toLatex(text),
                       fontsize=self.setting["font-size"])
         point_prototype = Point(x, y, text=toLatex(text))
@@ -73,21 +102,24 @@ class PyGeogebra:
     def drawMidPoint(self, A, B, text='', point_style=','):
         return self.drawPoint((A.x + B.x) / 2, (A.y + B.y) / 2, text=text, point_style=point_style)
 
-    def drawSegment(self, A, B, line_style='-'):
+    def drawSegment(self, A, B, text='a',line_style='-'):
         x_begin = min(A.x, B.x)
         x_end = max(A.x, B.x)
-        x = np.arange(x_begin, x_end + self.setting['x-step'], self.setting['x-step'])
+        x = np.arange(x_begin, x_end +
+                      self.setting['x-step'], self.setting['x-step'])
         k = (B.y - A.y) / (B.x - A.x)
         y0 = A.y if x_begin == A.x else B.y
         y = np.zeros(x.shape)
         for i in range(x.shape[0]):
             y[i] = y0 + (x[i] - x_begin) * k
         self.plt.plot(x, y, linestyle=line_style)
+        self.labels.append(toLatex(text))
 
     def drawLine(self, A, B, x_limit, text='', line_style='-'):
         x_begin = x_limit[0]
         x_end = x_limit[1]
-        x = np.arange(x_begin, x_end + self.setting['x-step'], self.setting['x-step'])
+        x = np.arange(x_begin, x_end +
+                      self.setting['x-step'], self.setting['x-step'])
         k = (B.y - A.y) / (B.x - A.x)
         x0 = A.x if min(A.x, B.x) == A.x else B.x
         y0 = A.y if min(A.x, B.x) == A.x else B.y
@@ -95,7 +127,8 @@ class PyGeogebra:
         y = np.zeros(x.shape)
         for i in range(x.shape[0]):
             y[i] = y0 + (x[i] - x_begin) * k
-        self.plt.plot(x, y, label=toLatex(text), linestyle=line_style)
+        self.plt.plot(x, y, linestyle=line_style)
+        self.labels.append(toLatex(text))
         return Function(x_limit=x_limit, data=[x, y], text=text)
 
     # x_limit must in x_limit of prototypes
@@ -103,14 +136,16 @@ class PyGeogebra:
         deviation = self.setting["deviation"]
         x_begin, x_end = x_limit[0], x_limit[1]
         y1, y2 = F1.data, F2.data
-        _x = np.arange(x_begin, x_end + self.setting['x-step'], self.setting['x-step'])
+        _x = np.arange(x_begin, x_end +
+                       self.setting['x-step'], self.setting['x-step'])
         x_begin_index, x_end_index = np.where(abs(y1[0] - x_begin) < deviation), np.where(
             abs(y1[0] - x_end) < deviation)
         _y1 = y1[1][x_begin_index[0][0]:x_end_index[0][0] + 1]
         x_begin_index, x_end_index = np.where(abs(y2[0] - x_begin) < deviation), np.where(
             abs(y2[0] - x_end) < deviation)
         _y2 = y2[1][x_begin_index[0][0]:x_end_index[0][0] + 1]
-        self.plt.fill_between(x=_x, y1=_y1, y2=_y2, alpha=self.setting['shadow-alpha'])
+        self.plt.fill_between(x=_x, y1=_y1, y2=_y2,
+                              alpha=self.setting['shadow-alpha'])
 
     def drawZero(self, fx, x_limit, text=''):
         x, y = symbols('x,y', real=true)
@@ -127,7 +162,8 @@ class PyGeogebra:
             pos += 1
 
     def drawMin(self, fx, x_limit, text=''):
-        min_x = minimize_scalar(fx.f, bounds=(x_limit[0], x_limit[1]), method="bounded").x
+        min_x = minimize_scalar(fx.f, bounds=(
+            x_limit[0], x_limit[1]), method="bounded").x
         min_y = fx.f(min_x)
         self.drawPoint(min_x, min_y,
                        f'{text}({round(min_x, self.setting["round-scale"])},{round(min_y, self.setting["round-scale"])})')
@@ -136,7 +172,8 @@ class PyGeogebra:
         def _f(x):
             return -1 * fx.f(x)
 
-        min_x = minimize_scalar(_f, bounds=(x_limit[0], x_limit[1]), method="bounded").x
+        min_x = minimize_scalar(_f, bounds=(
+            x_limit[0], x_limit[1]), method="bounded").x
         min_y = fx.f(min_x)
         self.drawPoint(min_x, min_y,
                        f'{text}({round(min_x, self.setting["round-scale"])},{round(min_y, self.setting["round-scale"])})')
@@ -151,7 +188,8 @@ class PyGeogebra:
         fig = self.figure
         frames = []
         for i in np.arange(slider.min_val, slider.max_val + slider.step, slider.step):
-            x = np.arange(x_limit[0], x_limit[1] + self.setting['x-step'], self.setting['x-step'])
+            x = np.arange(x_limit[0], x_limit[1] +
+                          self.setting['x-step'], self.setting['x-step'])
             length = x.shape
             y = np.zeros(length)
             for j in range(length[0]):
